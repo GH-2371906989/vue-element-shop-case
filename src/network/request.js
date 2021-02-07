@@ -2,7 +2,7 @@ import axios from 'axios'
 export function request(config) {
   //1.axios创建实例
   const instance = axios.create({
-    baseURL: 'http://123.207.32.32:8000',
+    baseURL: 'http://127.0.0.1:8888/api/private/v1/',
     responseType: 'json'
   })
   //2.axios的拦截器
