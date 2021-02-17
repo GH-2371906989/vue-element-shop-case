@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
+/* home 路由 */
+import home from './HomeRouter.js'
 Vue.use(VueRouter)
 
 const routes = [
@@ -11,11 +13,7 @@ const routes = [
   {
     path:'/login',
     component:()=>import('components/common/login/Login')
-  },
-  {
-    path:'/home',
-    component:()=>import('views/home/Home')
-  }
+  },home
 ]
 
 const router = new VueRouter({

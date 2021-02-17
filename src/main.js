@@ -6,6 +6,7 @@ import router from './router'
 //导入全局样式
 import 'assets/css/global.css'
 
+import 'default-passive-events'
 //导入图标
 import 'assets/fonts/iconfont.css'
 
