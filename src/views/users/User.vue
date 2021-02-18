@@ -8,19 +8,22 @@
 			</template>
 		</bread-crumb>
 		<!-- 卡片视图区域 -->
-		<el-card class="box-card">
+		<el-card class="box-card">			
 			<el-row :gutter="20">
+				<!-- 查询区域 -->
 				<el-col :span="10">
 					<el-input placeholder="请输入内容" v-model="queryinfo.query" clearable @clear="inputclear">
 						<el-button slot="append" icon="el-icon-search" @click="getuserlist()"></el-button>
 					</el-input>
 				</el-col>
+				<!-- 添加区域 -->
 				<el-col :span="6">
 					<el-button type="primary" @click="adialogVisible = true">
 						添加用户
 					</el-button>
 				</el-col>
 			</el-row>
+			<!-- 表格区域 -->
 			<el-table :data="userlist" height="250" border style="width: 100%">
 				<el-table-column type="index" label="#">
 				</el-table-column>
@@ -32,25 +35,32 @@
 				</el-table-column>
 				<el-table-column prop="role_name" label="超级管理员">
 				</el-table-column>
-				<el-table-column prop="mg_state" label="状态">
+				<el-table-column  label="状态">
 					<template slot-scope="scope">
 						<el-switch v-model="scope.row.mg_state" active-color="#55aaff" inactive-color="#ff4949" @change="userstatechange(scope.row)">
 						</el-switch>
 					</template>
 				</el-table-column>
+				<!-- 操作区域 -->
 				<el-table-column label="操作" width="180px">
 					<template slot-scope="scope">
 						<el-tooltip content="编辑" placement="top" :enterable="false">
 							<!-- 编辑 -->
-							<el-button type="primary" icon="el-icon-edit" size="mini" @click="editform(scope.row.id)"></el-button>
+							<el-button type="primary" icon="el-icon-edit" size="mini" @click="editform(scope.row.id)">
+								
+							</el-button>
 						</el-tooltip>
 						<el-tooltip content="删除" placement="top" :enterable="false">
 							<!-- 删除 -->
-							<el-button type="danger" icon="el-icon-delete" size="mini" @click="userdelect(scope.row)"></el-button>
+							<el-button type="danger" icon="el-icon-delete" size="mini" @click="userdelect(scope.row)">
+								
+							</el-button>
 						</el-tooltip>
 						<el-tooltip content="分派角色" placement="top" :enterable="false">
 							<!-- 分派角色 -->
-							<el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+							<el-button type="warning" icon="el-icon-setting" size="mini">
+								
+							</el-button>
 						</el-tooltip>
 					</template>
 				</el-table-column>
