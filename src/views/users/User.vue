@@ -42,7 +42,7 @@
 					</template>
 				</el-table-column>
 				<!-- 操作区域 -->
-				<el-table-column label="操作" width="180px">
+				<el-table-column label="操作" width="190px">
 					<template slot-scope="scope">
 						<el-tooltip content="编辑" placement="top" :enterable="false">
 							<!-- 编辑 -->
@@ -52,14 +52,15 @@
 						</el-tooltip>
 						<el-tooltip content="删除" placement="top" :enterable="false">
 							<!-- 删除 -->
-							<el-button type="danger" icon="el-icon-delete" size="mini" @click="userdelect(scope.row)">
-								
+							<el-button type="danger" icon="el-icon-delete" 
+							size="mini" @click="userdelect(scope.row)">	
 							</el-button>
 						</el-tooltip>
-						<el-tooltip content="分派角色" placement="top" :enterable="false">
+						<el-tooltip content="分派角色" placement="top" 
+						:enterable="false">
 							<!-- 分派角色 -->
-							<el-button type="warning" icon="el-icon-setting" size="mini">
-								
+							<el-button type="warning" icon="el-icon-setting" 
+							size="mini" @click="adduserright(scope.row)">								
 							</el-button>
 						</el-tooltip>
 					</template>
@@ -118,6 +119,34 @@
 				</el-button>
 			</div>
 		</el-dialog>
+		<!-- 分配角色对话框 -->
+		<el-dialog
+		  title="分配角色"
+		  :visible.sync="SetYserDialogVisible"
+		  width="50%" @close="SetUserDialogClosed">
+		  <div>
+			  <h2>当前的用户:{{userinfo.username}}</h2>
+			  <h2>当前的角色:{{userinfo.role_name}}</h2>
+			  <h2>分配新角色:
+			   <el-select v-model="roleid" placeholder="请选择">
+			      <el-option
+			        v-for="item in roleslist"
+			        :key="item.id"
+			        :label="item.roleName"
+			        :value="item.id">
+			      </el-option>
+			    </el-select>
+			  </h2>
+		  </div>
+		  <span slot="footer" class="dialog-footer">
+		    <el-button @click="SetUserDialogClosed">
+				取 消
+			</el-button>
+		    <el-button type="primary" @click="setuserright">
+				确 定
+			</el-button>
+		  </span>
+		</el-dialog>
 	</div>
 </template>
 
@@ -152,6 +181,14 @@
 				}
 			};
 			return {
+				/* 选择的角色name */
+				roleid:'',
+				/* 角色列表 */
+				roleslist: [],
+				/* 需要被分配角色的用户信息 */
+				userinfo:{},
+				/* 分配角色对话框的显示与隐藏 */
+				SetYserDialogVisible:false,
 				/* 控制用户编辑框的显示与隐藏 */
 				edialogVisible: false,
 				/* 添加用户表单form表单 */
@@ -241,6 +278,51 @@
 			BreadCrumb
 		},
 		methods: {
+			/* 确认添加角色 */
+			setuserright(){
+				if (!this.roleid) {
+					this.$message.error("必须选择一个角色")
+				}
+				request({
+					url:'users/'+this.userinfo.id+'/role',
+					method:'put',
+					data:{
+						rid:this.roleid
+					}
+				})
+				.then(req=>{
+						if (req.meta.status != 200) {
+							this.$message.error(req.meta.msg)
+							this.SetYserDialogVisible=false
+						} else {
+							this.$message.success(req.meta.msg)
+							this.getuserlist()
+							this.SetYserDialogVisible=false
+						}
+				})
+			},
+			/* 打开添加角色弹窗 */
+			adduserright(userinfo){
+				/* 当前用户的属性 */
+				this.userinfo=userinfo
+				/* 获取角色 */
+				request({
+						url: "roles"
+					})
+					.then(req => {
+						if (req.meta.status != 200) {
+							this.$message.error(req.meta.msg)
+						} else {
+							this.roleslist = req.data
+						}
+					})
+				this.SetYserDialogVisible=true
+			},
+			/* 关闭添加角色对话框 */
+			SetUserDialogClosed(){
+				this.SetYserDialogVisible=false
+			},
+			/* 删除用户 */
 			userdelect(val) {
 				this.$confirm('此用户将永久产出，是否确定删除用户:' + val.username, '确认信息', {
 						distinguishCancelAndClose: true,

@@ -85,7 +85,7 @@
 						:enterable="false">
 							<!-- 分派角色 -->
 							<el-button type="warning" icon="el-icon-setting" 
-							size="mini">
+							size="mini" @click="ShowSetRigthDialog(scope.row)">
 								分配权限
 							</el-button>
 						</el-tooltip>
@@ -94,6 +94,26 @@
 				
 			</el-table>
 		</el-card>
+		<!-- 分配权限对话框 -->
+		<el-dialog
+		  title="分配权限"
+		  :visible.sync="SetRigthDialogVisible"
+		  width="50%" @close="SetRigthDialogClosed">
+		  <el-tree
+		    :data="rightlist" :props="RigthDialogProps"
+		    show-checkbox node-key="id" default-expand-all
+			:default-checked-keys="defkeys"
+			ref="treeRef">
+		  </el-tree>
+		  <span slot="footer" class="dialog-footer">
+		    <el-button @click="SetRigthDialogClosed">
+				取 消
+			</el-button>
+		    <el-button type="primary" @click="allotRight">
+				确 定
+			</el-button>
+		  </span>
+		</el-dialog>
 	</div>
 </template>
 
@@ -108,13 +128,74 @@
 	export default{
 		data() {
 			return {
-				roleslist: []
+				roleslist: [],
+				/* 控制分配权限对话框的显示与隐藏 */
+				SetRigthDialogVisible:false,
+				/* 获取所有权限数据 */
+				rightlist:[],
+				/* 树形控件的配置选项 */
+				RigthDialogProps:{
+					children: 'children',
+					label: 'authName'
+				},
+				/* tree的默认勾选的节点 */
+				defkeys:[],
+				/* 选中的角色id */
+				roleID:''
 			}
 		},
 		components: {
 			BreadCrumb
 		},
 		methods: {
+			/* 添加角色授权 */
+			allotRight(){
+				const keys=[
+					...this.$refs.treeRef.getCheckedKeys(),
+					...this.$refs.treeRef.getHalfCheckedKeys()
+				]
+				const strkeys=keys.join(',')
+				request({
+					url: "/roles/"+this.roleID+"/rights",
+					method: "post",
+					data:{
+						rids:strkeys
+					}
+				})
+				.then(req=>{
+					if (req.meta.status != 200) {
+						this.$message.error(req.meta.msg)
+						this.SetRigthDialogVisible=false
+					} else {
+						this.getroleslist()
+						this.SetRigthDialogVisible=false
+						this.$message.success(req.meta.msg)
+					}
+				})
+				
+			},
+			/* 关闭tree时 默认勾选的节点设为空*/
+			SetRigthDialogClosed(){				
+				this.defkeys=[];
+				this.SetRigthDialogVisible=false
+			},
+			/* 显示分配角色的dialog */
+			ShowSetRigthDialog(row){
+				this.roleID=row.id
+				request({
+					url:"rights/tree "
+				})
+				.then(req=>{
+					if (req.meta.status != 200) {
+						this.$message.error(req.meta.msg)
+					} else {
+						/* 获取权限数据保存到list中 */
+						this.rightlist=req.data
+					}
+				})
+				this.getLeafKeys(row,this.defkeys)
+				this.SetRigthDialogVisible=true
+			},
 			/* 根据ID删除对应的权限 */
 			removerightbyid(role,rightId){
 				this.$confirm('此权限将永久删除，是否确定删除', '确认信息', {
@@ -156,7 +237,19 @@
 							this.roleslist = req.data
 						}
 					})
+			},
+			//通过递归的形式，获取角色下所有三级权限的id,并保存到defKeys 数组中
+			getLeafKeys (node,arr){
+				/* 当node没有children时添加到数组中 */
+				if(!node.children){
+					return arr.push(node.id)
+				}
+				/* 下一级children */
+				node.children.forEach(item=>{
+					this.getLeafKeys(item,arr)
+				})
 			}
+
 		},
 		created() {
 			this.getroleslist()
